@@ -1,0 +1,26 @@
+---
+# roles/apache/tasks/main.yml
+ 
+- name: install the latest version of Apache
+  yum: name=httpd state=latest
+  sudo: yes
+  
+- name: Copy files
+  copy:
+    src: ./
+    dest: /var/www/html/
+  sudo: yes
+ 
+- name: Copy redirect http ot https config file 
+  copy:
+    src: ./roles/apache/vhost-redirect.conf
+    dest: /etc/httpd/conf.d/
+  sudo: yes
+  
+- name: Enable and start the application
+  service:
+    name: httpd
+    enabled: yes
+    state: restarted
+  sudo: yes
+  

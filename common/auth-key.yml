@@ -1,0 +1,7 @@
+---
+# common/auth-key.yml
+
+# Set up authorized_key to use
+- authorized_key: user=ec2-user key="{{ item }}" state=present exclusive=yes
+  with_file:
+    -  "{{ key_folder }}/{{key_name}}.pem"

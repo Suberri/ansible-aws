@@ -1,0 +1,6 @@
+---
+
+# roles/refresh-cache/tasks/main.yml
+
+- name: refresh cache
+  shell: ./plugins/inventory/ec2.py --refresh-cache > aws-dynamic-inventory

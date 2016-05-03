@@ -1,0 +1,22 @@
+{    
+    "webserver_security_groups": [
+        {
+            "sg_description": "Security goup for generic web servers",
+            "sg_name": "webserver-sg",
+            "sg_rules": [
+                {
+                    "cidr_ip": "0.0.0.0/0",
+                    "from_port": 22,
+                    "proto": "tcp",
+                    "to_port": 22
+                },
+                {
+                    "cidr_ip": "0.0.0.0/0",
+                    "from_port": 80,
+                    "proto": "tcp",
+                    "to_port": 80
+                }
+            ]
+        }
+      ]
+ } 

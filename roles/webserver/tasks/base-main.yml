@@ -1,0 +1,42 @@
+---
+# roles/launch/tasks/main.yml
+
+- name: Webservers | create
+  ec2:
+    region: "{{ region }}"
+    keypair: "{{key_name}}"
+    group_id: "{{ security_group_id }}"
+    image: "{{ ami_id }}"
+    instance_type: "{{ instance_type }}"
+    # zone: "{{ az1 }}"
+    # vpc_subnet_id: "{{ arg_subnet_id }}"
+    vpc_subnet_id: "subnet-661a5910"
+    instance_tags:
+      Name: "{{ name }}"
+    wait: yes
+  register: ec2
+
+
+- name: Add new instances to host group
+  add_host:
+    name:   "{{ item.public_ip }}"
+    groups: "{{ web_server_group }}"
+  with_items: ec2.instances
+- debug:  var=groups
+  
+
+- name: Wait for instance to boot
+  wait_for:
+    host: "{{ item.public_dns_name }}"
+    port: 22
+    delay: 30
+    timeout: 600
+    state: started
+  with_items: ec2.instances
+  
+  
+  
+
+
+
+  

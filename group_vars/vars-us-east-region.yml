@@ -1,0 +1,6 @@
+---
+# us east region vars
+aws_region: us-east-1
+az1: "{{aws_region}}a"
+az2: "{{aws_region}}b"
+az3: "{{aws_region}}d"

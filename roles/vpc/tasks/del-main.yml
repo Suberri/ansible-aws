@@ -1,0 +1,29 @@
+---
+ 
+- name: VPC | load info
+  set_fact:
+     vpc_info:   "{{ lookup('file',  dynamic_var_folder + '/' + 'vpc-dynamic-info.yml') }}"
+ 
+- debug: var=vpc_info
+- debug: var=vpc_info.vpc.id
+- debug: var=vpc_info.vpc.region 
+ 
+- name: VPC | delete
+  ec2_vpc:
+     state: absent
+     vpc_id: "{{ vpc_info.vpc.id }}"
+     region: "{{vpc_info.vpc.region}}"  
+#     resource_tags: { "Name":"{{ vpc.name }}" }
+     resource_tags: { }
+     wait: yes
+     
+     
+# - copy: content="{{ vpc }}"  dest=~/vpc-static-info.yml
+# - copy: content="{{ newvpc }}" dest=~/vpc-dynamic-info.yml
+
+
+# - name: Set vpn_users variable to admins and users
+  # set_fact: 
+      # vpc_info: "{{ vpc + newvpc }}"
+      
+# - debug: var=vpc_info

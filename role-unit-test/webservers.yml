@@ -1,0 +1,20 @@
+---
+# webservers.yml
+    
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - role: keygen
+    - role: webserver
+      name: comcast
+      zone: "{{ az1 }}"
+      
+    - role: webserver
+      name: comcast
+      zone: "{{ az2 }}"
+      
+# - hosts:  webservers  
+  # remote_user: ec2-user 
+  # roles:
+    # - apache       

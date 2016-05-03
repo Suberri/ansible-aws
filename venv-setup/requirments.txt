@@ -1,0 +1,7 @@
+awscli
+boto
+PyYAML 
+Jinja2 
+httplib2 
+six
+virtualenv

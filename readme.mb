@@ -1,0 +1,38 @@
+Project objective:
+   Devops automation:
+        * System shall be deployed on instances of a web servers
+        * System shall use an open source configuration management tool (Github)
+        * System shall serve one html page 
+        * System shall secure this application and host such that only appropriate ports are publicly exposed and 
+        * Any http requests should be redirected to https
+        * System may use a self-signed certificate for the web server
+        * Develop and apply automated tests to validate the correctness of the server configuration
+        * Be able to demo a running instance of the host.
+
+Delivered project toolset includes:
+            o Github
+            o Vagrant 
+            o Ansible
+            o Python and Bash
+            * Platforms:
+                o Control – Centos/Ubuntu
+                o IaaS – AWS
+            
+The AWS test env includes: 
+  . A VPC with two availability zones. 
+  . Each of the zone includes a single Linux server with Apache web server.
+  . AWS Elastic Load Balancing (ELB) is used to redirect http/https traffic to the web servers. 
+  . A self-signed certificate is being generated and used by the ELB.
+
+To execute the test:
+    * Create a VM (Ubuntu or Centos)
+    * Initialize the VM using the vm setup script
+    * Run ansible-platbook site.yml to create the AWS env
+    * Run python checkit.py
+    * Run site-close.yml to terminate the AWS env
+
+The above steps can be scripted into Jenkins/drone.io or any other CI/CD tools that are fully integrated with Github.
+Any Github commit can trigger the CI/CD tool to execute the test/deploy script.  
+
+
+

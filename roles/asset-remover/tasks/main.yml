@@ -1,0 +1,55 @@
+---
+
+# remove all assets
+
+# load vpc info
+- name: VPC | load vpc info
+  set_fact:
+     vpc_info:   "{{ lookup('file',  assets_folder + '/' + 'vpc-dynamic-info.yml') }}"
+     
+# Remove elb
+- local_action:
+    module: ec2_elb_lb
+    name: "ms-vpc-elb"
+    state: absent
+    region: "{{ region }}" 
+       
+- name: EC2 | load ec2 info
+  ec2_remote_facts:
+      region: "{{ region }}" 
+      filters:
+         instance-state-name: running
+  register: ec2_inv
+
+
+- name: Terminate all ec2 instances
+  ec2:
+     state: "absent"
+     instance_ids:  "{{item.id}}"
+     region: "{{ region }}"
+     wait: True
+  with_items:  ec2_inv.instances
+ 
+- name: Security group | delete
+  local_action:
+     module: ec2_group
+     name: "{{ item }}"
+     vpc_id: "{{ vpc_info.vpc.id }}"
+     region: "{{vpc_info.vpc.region}}" 
+     description: ""
+     state: absent 
+  with_items: 
+         - "ms-vpc-elb-sg"
+         - "webserver_sg"
+       
+- name: VPC | delete
+  ec2_vpc:
+     state: absent
+     vpc_id: "{{ vpc_info.vpc.id }}"
+     region: "{{vpc_info.vpc.region}}"  
+     resource_tags: { }
+     wait: yes
+     
+
+     
+     

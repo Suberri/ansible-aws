@@ -1,0 +1,77 @@
+---
+# roles/launch/tasks/main.yml
+
+- name: Webservers | create
+  ec2:
+    region: "{{ region }}"
+    keypair: "{{key_name}}"
+    group: "{{ webservers_security_groups[0].sg_name }}"
+    image: "{{ ami_id }}"
+    instance_type: "{{ instance_type }}"
+    vpc_subnet_id: "{{ item }}"
+    assign_public_ip: True
+    instance_tags:
+        Name: "{{ vpc.name }}_WEB_Instance"
+    wait: yes
+    wait_timeout: 600
+  with_items:
+      - "{{ public_subnet_1 }}"
+      - "{{ public_subnet_2 }}"
+  register: web
+
+
+- name: WebServer | Set the Instances facts
+  set_fact:
+     instance_public_ip_1: "{{ web.results[0].instances[0].public_ip }}"
+     instance_id_1: "{{ web.results[0].instances[0].id }}"
+     instance_public_ip_2: "{{ web.results[1].instances[0].public_ip }}"
+     instance_id_2: "{{ web.results[1].instances[0].id }}"
+
+- name:  Add new servers ip to host group  
+  add_host:
+    name:   "{{ item }}"
+    groups: "{{ web_server_group }}"
+  with_items: 
+     - "{{ instance_public_ip_1 }}"
+     - "{{ instance_public_ip_2 }}"      
+
+
+- name: WebServer | create a webservers tag in host file
+  local_action: 
+     module: lineinfile 
+     dest: "~/{{vpc.name}}-hosts" 
+     create: yes
+     regexp: "[webservers]"
+     line: "[webservers]"
+  
+- name: WebServer | Add the newly created EC2 instance(s) to the local host group (located inside the directory)
+  local_action: 
+     module: lineinfile 
+     dest: "~/{{vpc.name}}-hosts" 
+     create: yes
+     regexp: "{{ item }}" 
+     insertafter: "[webservers]" 
+     line: "{{ item }}"
+  with_items:
+      - "{{ instance_public_ip_1 }}"
+      - "{{ instance_public_ip_2 }}" 
+
+- name: WebServer | Wait for SSH to come up
+  local_action: 
+     module: wait_for 
+     host: "{{ item }}" 
+     port: 22 
+     state: started
+  with_items: 
+     - "{{ instance_public_ip_1 }}"
+     - "{{ instance_public_ip_2 }}"  
+ 
+- name: webserver | save ec2 servers info to the aws assets file 
+  shell: echo "{{ web }}" > "ec2-dynamic-info.yml"
+  args:
+     chdir: "{{ assets_folder }}"  
+  
+  
+
+    
+  

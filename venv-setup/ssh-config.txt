@@ -1,0 +1,4 @@
+
+### default for all ##
+Host *
+   IdentityFile ~/.ssh/aws-key.pem

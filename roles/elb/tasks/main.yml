@@ -1,0 +1,131 @@
+---
+- name: VPC | load vpc dynamic info
+  set_fact:
+     vpc_info:   "{{ lookup('file',  assets_folder + '/' + 'vpc-dynamic-info.yml') }}"
+     
+     
+- name: get public subnet 1 id
+  set_fact:  
+    subnet_1_id: "{{ item.id }}"
+  with_items: vpc_info.subnets
+  when: item.resource_tags["Name"].find("a-public") != -1
+
+- name: get public subnet 2 id
+  set_fact:  
+    subnet_2_id: "{{ item.id }}"
+  with_items: vpc_info.subnets
+  when: item.resource_tags["Name"].find("b-public") != -1  
+  
+# get the name of our VPC
+
+- name: VPC | load vpc static info file
+  set_fact:
+     vpc_static_info:   "{{ lookup('file',  assets_folder + '/' + 'vpc-static-info.yml') }}"
+     
+
+# Get the VPC ec2 ides
+- name: VPC | load ec2 info file
+  set_fact:
+     ec2_info:   "{{ lookup('file',  assets_folder + '/' + 'ec2-dynamic-info.yml') }}"
+     
+
+- name: EC2 | set ec2 instance ids 
+  set_fact:
+     instance_id_1: "{{ec2_info.results[0].instances[0].id }}"
+     instance_id_2: "{{ec2_info.results[1].instances[0].id }}"
+
+     
+- name: elb | set elb name
+  set_fact:
+    elb_name: "{{ vpc_static_info.name }}-elb"
+
+- name: elb-sg | set elb sg name
+  set_fact:    
+     sg_name:  "{{ elb_name }}-sg"
+     sg_description: "This sg is for {{ elb_name }}"
+
+- name: ELB | Create ELB Security Group
+  local_action:
+    module: ec2_group
+    name: "{{ sg_name }}"
+    description: "{{ sg_description }}"
+    region: "{{ region }}" 
+    vpc_id: "{{ vpc_info.vpc.id }}"
+    state: present
+    rules: "{{ item.sg_rules }}"
+  with_items: elb_security_groups
+  register: elb_sg
+  
+#- debug: var=elb_sg  
+
+
+- name: ELB | Tag the ELB Security Group with a name
+  local_action:
+    module: ec2_tag
+    resource: "{{ item.group_id}}"
+    region: "{{ region }}"
+    state: present
+    tags:
+      Name: "{{ vpc_static_info.name }}-{{ sg_name }}"
+  with_items: elb_sg.results
+  
+
+- name: ELB | Set the ELB Security Group id as facts
+  set_fact:
+    elb_security_group: "{{ item.group_id}}"
+  with_items: elb_sg.results
+
+- name: ELB | Ensure load balancer exists
+  local_action:
+    module: ec2_elb_lb
+    name: "{{ elb_name }}"
+    security_group_ids: "{{ elb_security_group }}"
+    state: present
+    region: "{{ region }}"
+    subnets: 
+      - "{{ subnet_1_id }}"
+      - "{{ subnet_2_id }}"
+    purge_subnets: "{{ elb_purge_subnets }}"
+    cross_az_load_balancing: "{{ elb_cross_az_load_balancing }}"
+    connection_draining_timeout: "{{ elb_connection_draining_timeout }}"
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_protocol: http
+        instance_port: 80
+      - protocol: https
+        load_balancer_port: 443
+        instance_protocol: http
+        instance_port: 80 
+        ssl_certificate_id: "{{cert_metadata.Arn}}"
+        
+    health_check:
+      ping_protocol: "{{ elb_ping_protocol }}"
+      ping_port: "{{ elb_ping_port }}"
+      response_timeout: "{{ elb_response_timeout }}"
+      interval: "{{ elb_interval }}"
+      unhealthy_threshold: "{{ elb_unhealthy_threshold }}"
+      healthy_threshold: "{{ elb_healthy_threshold }}"    
+  register: web_elb
+
+- debug: var=web_elb.elb
+    
+- name: write elb facts to a file to make the elb dnx name avalialbe       
+  copy:
+      content: "{{ web_elb.elb | to_nice_json }}"
+      dest: "~/elb-info"
+      
+- name: vagrant shared folder issue - move elb info to local folder
+  shell: cp  ~/elb-info  ./elb-info
+ 
+      
+- name: ELB | Adding EC2 instance(s) to the ELB
+  local_action:
+    module: ec2_elb
+    region: "{{ region }}"
+    ec2_elbs: "{{ elb_name }}"
+    instance_id: "{{ item }}"
+    state: present
+  with_items: 
+    - "{{ instance_id_1 }}"
+    - "{{ instance_id_2 }}"

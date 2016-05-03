@@ -1,0 +1,7 @@
+---
+
+desired_capacity:  2
+asg_name: ms-vpc-asg
+
+public_subnet_1: "subnet-e60f4690" 
+public_subnet_2: "subnet-5b90f403" 

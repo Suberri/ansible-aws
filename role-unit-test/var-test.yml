@@ -1,0 +1,12 @@
+---
+
+- name: Testing
+  hosts: localhost
+  gather_facts: no    
+  tasks:
+    - set_fact:
+         var1="var1"
+         var2="not var2 name" 
+        
+    - debug: var=var1
+    - debug: var=var2

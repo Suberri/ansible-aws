@@ -1,0 +1,22 @@
+---
+
+Country: "US"
+State:  "Penselvania"
+City:   "Philadelphia"
+Dept:  "Devopes"
+Domain: "www.example.com"
+Key_name:  "aws-elb.key" 
+Cert_name: "aws-elb.crt"
+Cert_info:  "/C={{Country}}/ST={{State}}/L={{City}}/O={{Dept}}/CN={{Domain}}"
+Cert_folder: "./cert"
+Key_File: "{{Cert_folder}}/aws-elb.key"
+Cert_file: "{{Cert_folder}}/aws-elb.crt"
+iam_cert_name: test_elb_cert
+
+Gen_ssl_cert_cmd: "openssl req -new -nodes -x509 -subj '{{Cert_info}}' -days 365 -keyout {{Key_File}} -out {{Cert_file}}"
+
+Upload_cert_cmd: "aws iam upload-server-certificate --server-certificate-name {{iam_cert_name}} --certificate-body file://{{Cert_name}} --private-key file://{{Key_name}}"
+
+del_cert_cmd: "aws iam delete-server-certificate --server-certificate-name {{iam_cert_name}}"
+
+get_cert_info: "aws iam get-server-certificate  --server-certificate-name {{iam_cert_name}}" 

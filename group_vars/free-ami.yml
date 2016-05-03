@@ -1,0 +1,6 @@
+ ---
+ 
+# AWS vars
+ami_id: ami-08111162
+instance_type: t2.micro
+security_groups: sg-3989b341

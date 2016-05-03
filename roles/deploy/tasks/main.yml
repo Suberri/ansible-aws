@@ -1,0 +1,21 @@
+---
+# roles/deploy/tasks/main.yml
+
+# Set up authorized_keys exclusively with one key
+ 
+- name: install the latest version of Apache
+  yum: name=httpd state=latest
+  sudo: yes
+
+- name: Copy files
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+  sudo: yes
+  
+- name: Enable and start the application
+  service:
+    name: httpd
+    enabled: yes
+    state: restarted
+  sudo: yes

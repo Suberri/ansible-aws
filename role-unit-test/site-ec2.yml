@@ -1,0 +1,25 @@
+---
+# .site.yml
+    
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - role: vpc
+    - role: security-group
+      vpc_id: vpc_id
+    - role: webserver
+
+# # setup web servers and files
+# - hosts:  webservers  
+  # gather_facts: no    
+  # remote_user: ec2-user 
+  # roles:
+     # - apache   
+     
+# #start elb    
+# - hosts: localhost
+  # connection: local
+  # gather_facts: no
+  # roles:
+    # - role: elb

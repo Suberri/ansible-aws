@@ -1,0 +1,45 @@
+---
+# VPC object
+
+vpc: 
+   name: ms-vpc
+   region: "{{ region }}"
+   cidr: 172.25.0.0/16
+ 
+   public_cidr_1: 172.25.10.0/24
+   public_az_1: "{{ az1 }}"
+ 
+   public_cidr_2: 172.25.20.0/24
+   public_az_2: "{{ az2 }}"
+ 
+   private_cidr: 172.25.30.0/24
+   private_az: "{{ az3 }}"
+ 
+subnet_public_1_name:   "{{ vpc.name }}-{{ vpc.public_az_1 }}-public-subnet"
+subnet_public_2_name:   "{{ vpc.name }}-{{ vpc.public_az_2 }}-public-subnet"
+subnet_private_1_name:  "{{ vpc.name }}-{{ vpc.private_az }}-private-subnet"
+ #
+ # VPC subnets object
+#
+     
+subnets:
+   - cidr: "{{ vpc.public_cidr_1 }}" # Public Subnet-1
+     az: "{{ vpc.public_az_1 }}"
+     resource_tags: { "Name":"{{ subnet_public_1_name}}" } 
+   - cidr: "{{ vpc.public_cidr_2 }}" # Public Subnet-2
+     az: "{{ vpc.public_az_2 }}"
+     resource_tags: { "Name":"{{ subnet_public_2_name}}" }
+   - cidr: "{{ vpc.private_cidr }}" # Private Subnet
+     az: "{{ vpc.private_az }}"
+     resource_tags: { "Name":"{{ subnet_private_1_name }}" }
+
+ # Route table(s) for Subnets inside the VPC
+ #
+ # Routing Table for Public Subnet
+public_subnet_rt:
+   - subnets:
+       - "{{ vpc.public_cidr_1 }}"
+       - "{{ vpc.public_cidr_2 }}"
+     routes:
+       - dest: 0.0.0.0/0
+         gw: igw

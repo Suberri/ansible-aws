@@ -1,0 +1,42 @@
+---
+# roles/deploy/tasks/main.yml
+
+# Set up authorized_keys exclusively with one key
+      
+- name: Install git
+  yum:
+    pkg: git
+    state: present
+  sudo: yes
+
+- name: Create www directory
+  file:
+    path: /srv/www
+    owner: ec2-user
+    group: ec2-user
+    state: directory
+  sudo: yes
+
+- name: Clone repository
+  git:
+    repo: "https://github.com/atplanet/hello-world-express-app.git"
+    dest: /srv/www/webapp
+    version: master
+
+- name: Ensure upstart folder exit
+  file: 
+     path=/etc/upstart state=directory
+  sudo: yes
+
+- name: Install upstart script
+  copy:
+    src: upstart.conf
+    dest: /etc/upstart/webapp.conf
+  sudo: yes
+
+- name: Enable and start the application
+  service:
+    name: webapp
+    enabled: yes
+    state: restarted
+  sudo: yes

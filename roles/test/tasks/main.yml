@@ -1,0 +1,9 @@
+---
+# roles/test/tasks/main.yml
+
+# Set up authorized_key
+# - include: common/auth-key.yml
+- shell: ls
+- shell: pwd
+  register: pwd
+- debug: var=pwd   

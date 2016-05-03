@@ -1,0 +1,28 @@
+---
+# us east region vars
+env: aws
+project_name: continious_deploymenet
+user: ec2-user
+region: us-east-1
+az1: "{{region}}a"
+az2: "{{region}}b"
+az3: "{{region}}d"
+
+ami_id: ami-08111162
+instance_type: t2.micro
+security_group_id: sg-3989b341
+
+key_name: aws-key
+key_folder: ~/.ssh
+
+web_server_group: webservers
+
+dynamic_var_folder: dynamic_vars
+
+assets_folder: assets
+vpc_assets_file: vpc-dynamic-info.yml 
+ec2_assets_file: ec2-dynamic-info.yml
+
+tmp_folder: tmp
+
+

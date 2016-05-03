@@ -1,0 +1,7 @@
+---
+
+- name: dump using template
+  template: src=dumpall.j2 dest=~/allvars.tmp
+
+- name: move file to project folder
+  shell: cp ~/allvars.tmp ./all_ansible_vars.json

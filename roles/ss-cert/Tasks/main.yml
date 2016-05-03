@@ -1,0 +1,29 @@
+---
+
+- name: Check cert file state
+  stat: path="{{ Cert_file }}"
+  register: cFile
+   
+- name: Generate a SSL certificate
+  command: "{{Gen_ssl_cert_cmd}}"
+  when: not cFile.stat.exists
+ 
+- name: Get cert info
+  command: "{{get_cert_info}}"
+  register: cmd_result
+  ignore_errors: True
+  
+- name: Get cert ARN
+  set_fact:
+     cert_metadata:  "{{(cmd_result.stdout|from_json).ServerCertificate.ServerCertificateMetadata}}"
+     
+- debug: var=cert_metadata
+  
+- name: Upload cert to aws
+  command: "{{Upload_cert_cmd}}"
+  args:
+    chdir: "{{Cert_folder}}"
+  when: "'FAILED' in cmd_result.stderr"  
+ 
+  
+
